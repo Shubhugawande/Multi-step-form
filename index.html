@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png" />
+  <title>Frontend Mentor | Multi-step form</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+  <!-- Top Utility Bar (Demo Auto-Fill, Viewport Switcher & Reset) -->
+  <header class="top-toolbar">
+    <div class="top-toolbar__inner">
+      <div class="brand-pill">
+        <span class="brand-pill__icon">FM</span>
+        <span>Multi-Step Form</span>
+        <span id="saveIndicator" class="save-badge">
+          <span class="save-badge__dot"></span> Auto-saved
+        </span>
+      </div>
+
+      <div class="toolbar-actions">
+        <div class="viewport-switcher" role="group" aria-label="Viewport Mode">
+          <button type="button" id="btnViewResponsive" onclick="setViewportMode('responsive')" class="viewport-btn is-active">
+            Desktop / Auto
+          </button>
+          <button type="button" id="btnViewMobile" onclick="setViewportMode('mobile')" class="viewport-btn">
+            Mobile (375px)
+          </button>
+        </div>
+
+        <button type="button" onclick="fillDemoData()" class="btn-utility btn-utility--primary" title="Fill sample user details">
+          Auto-Fill Demo
+        </button>
+        <button type="button" onclick="resetFormState()" class="btn-utility btn-utility--danger" title="Reset form">
+          Reset
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast Notification -->
+  <div id="toastBanner" class="toast-banner hidden" role="status" aria-live="polite">
+    <span id="toastText">Saved</span>
+  </div>
+
+  <!-- Main Workspace -->
+  <main class="workspace">
+    <div id="appShell" class="app-shell">
+
+      <!-- Mobile Sidebar Banner (< 768px or in 375px Mobile Preview) -->
+      <div id="mobileBanner" class="mobile-banner">
+        <nav id="mobileStepNav" class="mobile-step-nav" aria-label="Form Steps Mobile">
+          <!-- Populated dynamically by script.js -->
+        </nav>
+      </div>
+
+      <!-- Main Form Card -->
+      <div id="mainCard" class="form-card">
+
+        <!-- Desktop Left Sidebar (>= 768px) -->
+        <aside id="desktopSidebar" class="desktop-sidebar">
+          <nav id="desktopStepNav" class="desktop-step-nav" aria-label="Form Steps Desktop">
+            <!-- Populated dynamically by script.js -->
+          </nav>
+
+          <!-- Live Running Estimate Widget -->
+          <div class="sidebar-estimate">
+            <div class="sidebar-estimate__top">
+              <span>Live Estimate</span>
+              <span id="sidebarBillingBadge" class="sidebar-estimate__badge">Monthly</span>
+            </div>
+            <div class="sidebar-estimate__bottom">
+              <span id="sidebarPlanName" class="sidebar-estimate__plan">Arcade</span>
+              <span id="sidebarTotalValue" class="sidebar-estimate__total">$9/mo</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Right Form Content Column -->
+        <div id="formColumn" class="form-column">
+          <div id="stepCardSurface" class="step-surface">
+
+            <!-- ==================== STEP 1: PERSONAL INFO ==================== -->
+            <section id="step-1" class="step-panel" aria-labelledby="step1-heading">
+              <h1 id="step1-heading" class="step-title">Personal info</h1>
+              <p class="step-description">
+                Please provide your name, email address, and phone number.
+              </p>
+
+              <form id="personalInfoForm" class="personal-form" novalidate onsubmit="event.preventDefault(); handleNextStep();">
+                <div>
+                  <div class="form-field__header">
+                    <label for="inputName" class="form-label">Name</label>
+                    <span id="errName" class="field-error hidden" role="alert">This field is required</span>
+                  </div>
+                  <input
+                    id="inputName"
+                    type="text"
+                    autocomplete="name"
+                    placeholder="e.g. Stephen King"
+                    oninput="handleFieldInput('name', this.value)"
+                    onblur="validateSingleField('name')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div>
+                  <div class="form-field__header">
+                    <label for="inputEmail" class="form-label">Email Address</label>
+                    <span id="errEmail" class="field-error hidden" role="alert">This field is required</span>
+                  </div>
+                  <input
+                    id="inputEmail"
+                    type="email"
+                    autocomplete="email"
+                    placeholder="e.g. stephenking@lorem.com"
+                    oninput="handleFieldInput('email', this.value)"
+                    onblur="validateSingleField('email')"
+                    class="form-input"
+                  />
+                </div>
+
+                <div>
+                  <div class="form-field__header">
+                    <label for="inputPhone" class="form-label">Phone Number</label>
+                    <span id="errPhone" class="field-error hidden" role="alert">This field is required</span>
+                  </div>
+                  <input
+                    id="inputPhone"
+                    type="tel"
+                    autocomplete="tel"
+                    placeholder="e.g. +1 234 567 890"
+                    oninput="handleFieldInput('phone', this.value)"
+                    onblur="validateSingleField('phone')"
+                    class="form-input"
+                  />
+                </div>
+
+                <button type="submit" class="hidden" aria-hidden="true">Submit</button>
+              </form>
+            </section>
+
+            <!-- ==================== STEP 2: SELECT PLAN ==================== -->
+            <section id="step-2" class="step-panel hidden" aria-labelledby="step2-heading">
+              <h1 id="step2-heading" class="step-title">Select your plan</h1>
+              <p class="step-description">
+                You have the option of monthly or yearly billing.
+              </p>
+
+              <div id="errPlan" class="plan-alert hidden" role="alert">
+                Please select a subscription plan to continue.
+              </div>
+
+              <div id="planCardsGrid" class="plans-grid" role="radiogroup" aria-label="Subscription Plans">
+                <!-- Populated dynamically by script.js -->
+              </div>
+
+              <div class="billing-switch-bar">
+                <button
+                  type="button"
+                  id="lblMonthly"
+                  onclick="setBillingCycle('monthly')"
+                  class="billing-label is-active"
+                >
+                  Monthly
+                </button>
+
+                <button
+                  type="button"
+                  id="billingToggleBtn"
+                  role="switch"
+                  aria-checked="false"
+                  aria-label="Toggle between monthly and yearly billing"
+                  onclick="toggleBillingCycle()"
+                  class="billing-toggle"
+                >
+                  <span id="billingToggleThumb" class="billing-toggle__thumb"></span>
+                </button>
+
+                <button
+                  type="button"
+                  id="lblYearly"
+                  onclick="setBillingCycle('yearly')"
+                  class="billing-label"
+                >
+                  Yearly
+                </button>
+              </div>
+            </section>
+
+            <!-- ==================== STEP 3: PICK ADD-ONS ==================== -->
+            <section id="step-3" class="step-panel hidden" aria-labelledby="step3-heading">
+              <h1 id="step3-heading" class="step-title">Pick add-ons</h1>
+              <p class="step-description">
+                Add-ons help enhance your gaming experience.
+              </p>
+
+              <div id="addonsList" class="addons-list">
+                <!-- Populated dynamically by script.js -->
+              </div>
+            </section>
+
+            <!-- ==================== STEP 4: FINISHING UP ==================== -->
+            <section id="step-4" class="step-panel hidden" aria-labelledby="step4-heading">
+              <h1 id="step4-heading" class="step-title">Finishing up</h1>
+              <p class="step-description">
+                Double-check everything looks OK before confirming.
+              </p>
+
+              <div class="summary-box">
+                <div class="summary-box__header">
+                  <div>
+                    <div id="summaryPlanTitle" class="summary-plan-title">Arcade (Monthly)</div>
+                    <div class="summary-plan-actions">
+                      <button type="button" onclick="goToStep(2)" class="link-btn">Change</button>
+                      <span>•</span>
+                      <button type="button" id="quickSwitchBillingBtn" onclick="toggleBillingCycle()" class="link-btn link-btn--accent">
+                        Switch to Yearly (2 months free)
+                      </button>
+                    </div>
+                  </div>
+                  <div id="summaryPlanPrice" class="summary-plan-price">$9/mo</div>
+                </div>
+
+                <div id="summaryAddonsList" class="summary-addons">
+                  <!-- Populated dynamically by script.js -->
+                </div>
+              </div>
+
+              <!-- Optional Promo Code Enhancer -->
+              <div class="promo-box">
+                <div class="promo-box__row">
+                  <div class="promo-pills">
+                    <span class="promo-label">Promo Code:</span>
+                    <button type="button" onclick="applyPresetPromo('GAMER20')" class="promo-pill">GAMER20 (-20%)</button>
+                    <button type="button" onclick="applyPresetPromo('WELCOME10')" class="promo-pill">WELCOME10 (-10%)</button>
+                  </div>
+                  <div class="promo-controls">
+                    <label for="promoInput" class="sr-only">Promo Code</label>
+                    <input id="promoInput" type="text" placeholder="Enter code" class="promo-input" />
+                    <button type="button" onclick="handleApplyPromoInput()" class="promo-apply-btn">Apply</button>
+                  </div>
+                </div>
+                <div id="promoFeedback" class="promo-feedback hidden"></div>
+              </div>
+
+              <!-- Total Row -->
+              <div class="summary-total-row">
+                <div>
+                  <span id="summaryTotalLabel" class="summary-total-label">Total (per month)</span>
+                  <span id="summaryDiscountTag" class="discount-badge hidden"></span>
+                </div>
+                <div>
+                  <span id="summaryOriginalTotal" class="summary-original-price hidden"></span>
+                  <span id="summaryTotalPrice" class="summary-total-price">+$12/mo</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- ==================== STEP 5: THANK YOU ==================== -->
+            <section id="step-5" class="step-panel thank-you-panel hidden" aria-labelledby="step5-heading">
+              <img src="/assets/images/icon-thank-you.svg" alt="Thank you checkmark" class="thank-you-icon" />
+
+              <h1 id="step5-heading" class="step-title">Thank you!</h1>
+              <p class="thank-you-text">
+                Thanks for confirming your subscription! We hope you have fun using our platform. If you ever need support, please feel free to email us at
+                <a href="mailto:support@loremgaming.com">support@loremgaming.com</a>.
+              </p>
+
+              <!-- Order Receipt Card -->
+              <div id="orderReceiptCard" class="receipt-card">
+                <div class="receipt-row receipt-row--head">
+                  <span>Order Receipt</span>
+                  <span id="receiptOrderId">#LG-84920</span>
+                </div>
+                <div class="receipt-row">
+                  <span>Subscriber:</span>
+                  <span id="receiptSubscriber">Stephen King</span>
+                </div>
+                <div class="receipt-row">
+                  <span>Email:</span>
+                  <span id="receiptEmail">stephenking@lorem.com</span>
+                </div>
+                <div class="receipt-row">
+                  <span>Selected Plan:</span>
+                  <span id="receiptPlan">Arcade (Monthly)</span>
+                </div>
+                <div class="receipt-row receipt-row--foot">
+                  <span>Total Billed:</span>
+                  <span id="receiptTotal">$12/mo</span>
+                </div>
+              </div>
+
+              <div class="receipt-actions">
+                <button type="button" onclick="downloadReceiptTxt()" class="btn-next">
+                  Download Receipt (.txt)
+                </button>
+                <button type="button" onclick="editConfirmedOrder()" class="btn-utility btn-utility--primary">
+                  Modify Subscription
+                </button>
+              </div>
+            </section>
+
+          </div>
+
+          <!-- Bottom Navigation Bar -->
+          <div id="bottomNavBar" class="bottom-nav">
+            <button type="button" id="btnGoBack" onclick="handlePrevStep()" class="btn-back invisible">
+              Go Back
+            </button>
+            <button type="button" id="btnNextStep" onclick="handleNextStep()" class="btn-next">
+              Next Step
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="attribution">
+    Challenge by <a href="https://www.frontendmentor.io?ref=challenge" target="_blank" rel="noopener noreferrer">Frontend Mentor</a>.
+    Coded by <a href="#" >Shubham Gawande</a>
+    Coded with modular HTML5, CSS3 &amp; Vanilla JavaScript.
+  </footer>
+
+  <script src="/script.js" defer></script>
+</body>
+</html>
